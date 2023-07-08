@@ -1,3 +1,4 @@
+const db = require('../../data/db-config')
 /*
   If `scheme_id` does not exist in the database:
 
@@ -6,8 +7,14 @@
     "message": "scheme with scheme_id <actual id> not found"
   }
 */
-const checkSchemeId = (req, res, next) => {
+async function checkSchemeId (req, res, next) {
+  const schemeId = await db('schemes').where('scheme_id', req.params.scheme_id).first();
 
+  if (!schemeId) {
+    res.status(404).json({message: `scheme with scheme_id ${req.params.scheme_id} not found`})
+  } else {
+    next()
+  }
 }
 
 /*
@@ -19,6 +26,11 @@ const checkSchemeId = (req, res, next) => {
   }
 */
 const validateScheme = (req, res, next) => {
+  const schemeName = req.body.scheme_name
+
+  if (!schemeName || isNaN(schemeName) === false || schemeName.length === 0) {
+    res.status(400).json({message: "invalid scheme_name"})
+  } else next()
 
 }
 
@@ -31,7 +43,23 @@ const validateScheme = (req, res, next) => {
     "message": "invalid step"
   }
 */
+
+// http post :9000/api/schemes/8/steps instructions='Do not eat junk food' step_number=4
+
 const validateStep = (req, res, next) => {
+  const { instructions, step_number } = req.body;
+
+  console.log(instructions, step_number)
+  
+  if (!instructions || 
+    isNaN(instructions) === false || 
+    instructions.length === 0 ||
+    isNaN(step_number) === true ||
+    !step_number ||
+    step_number < 1) {
+      res.status(400).json({message: "invalid step"})
+    } else next()
+
 
 }
 
